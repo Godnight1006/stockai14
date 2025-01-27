@@ -6,7 +6,7 @@ from dt_model import DecisionTransformer
 import numpy as np
 
 def load_preprocessed_data():
-    loader = DataLoader(api_key='YOUR_API_KEY')
+    loader = DataLoader()
     # Load multiple symbols
     return loader.load_data(['AAPL', 'MSFT', 'GOOG'], '2010-01-01', '2023-12-31')
 

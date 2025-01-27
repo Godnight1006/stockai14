@@ -4,7 +4,7 @@ from data_loader import DataLoader
 from trading_env import StockTradingEnv
 
 def fetch_2024_data():
-    loader = DataLoader(api_key='YOUR_API_KEY')
+    loader = DataLoader()
     return loader.load_data(['AAPL', 'MSFT', 'GOOG'], '2024-01-01', '2024-12-31')
 
 def run_validation():
@@ -28,7 +28,7 @@ def run_validation():
             break
             
     # Calculate final portfolio value
-    current_price = val_df.iloc[-1]['4. close']
+    current_price = val_df.iloc[-1][f'{symbol}_Close']
     final_value = env.balance + env.shares_held * current_price
     print(f"Final portfolio value: ${final_value:,.2f}")
 

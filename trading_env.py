@@ -36,7 +36,7 @@ class StockTradingEnv(gym.Env):
         symbol = self.symbols[stock_idx]
         
         # Get current price for selected stock
-        current_price = self.df.iloc[self.current_step][f"{symbol}_4. close"]
+        current_price = self.df.iloc[self.current_step][f"{symbol}_Close"]
         
         # Execute trade for specific stock
         if action_type == 1:
@@ -47,7 +47,7 @@ class StockTradingEnv(gym.Env):
         # Calculate portfolio value across all stocks
         portfolio_value = self.balance
         for sym in self.shares_held:
-            price = self.df.iloc[self.current_step][f"{sym}_4. close"]
+            price = self.df.iloc[self.current_step][f"{sym}_Close"]
             portfolio_value += self.shares_held[sym] * price
             
         reward = portfolio_value - self.initial_balance
