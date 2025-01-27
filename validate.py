@@ -5,7 +5,7 @@ from trading_env import StockTradingEnv
 
 def fetch_2024_data():
     loader = DataLoader(api_key='YOUR_API_KEY')
-    return loader.load_data('AAPL', '2024-01-01', '2024-12-31')
+    return loader.load_data(['AAPL', 'MSFT', 'GOOG'], '2024-01-01', '2024-12-31')
 
 def run_validation():
     # Load trained model

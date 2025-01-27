@@ -7,14 +7,20 @@ class StockTradingEnv(gym.Env):
         self.df = df
         self.initial_balance = initial_balance
         
-        # Action space: 0=hold, 1=buy, 2=sell
-        self.action_space = gym.spaces.Discrete(3)
+        # Extract symbols from column names
+        self.symbols = list({col.split('_')[0] for col in df.columns})
+        self.num_stocks = len(self.symbols)
         
-        # Observation space: OHLCV + indicators
+        # New action space: 3 actions per stock (hold/buy/sell)
+        self.action_space = gym.spaces.Discrete(3 * self.num_stocks)
+        
+        # Observation space: OHLCV + indicators for all stocks
         self.observation_space = gym.spaces.Box(
             low=-np.inf, high=np.inf, 
             shape=(len(df.columns),), dtype=np.float32)
         
+        # Track positions per stock
+        self.shares_held = {symbol: 0 for symbol in self.symbols}
         self.reset()
         
     def reset(self):
@@ -24,16 +30,26 @@ class StockTradingEnv(gym.Env):
         return self._get_obs()
     
     def step(self, action):
-        current_price = self.df.iloc[self.current_step]['4. close']
+        # Decompose action into stock_idx and action_type
+        stock_idx = action // 3
+        action_type = action % 3  # 0=hold, 1=buy, 2=sell
+        symbol = self.symbols[stock_idx]
         
-        # Execute trade
-        if action == 1:  # Buy
-            self._execute_buy(current_price)
-        elif action == 2:  # Sell
-            self._execute_sell(current_price)
+        # Get current price for selected stock
+        current_price = self.df.iloc[self.current_step][f"{symbol}_4. close"]
+        
+        # Execute trade for specific stock
+        if action_type == 1:
+            self._execute_buy(current_price, symbol)
+        elif action_type == 2:
+            self._execute_sell(current_price, symbol)
             
-        # Calculate reward
-        portfolio_value = self.balance + self.shares_held * current_price
+        # Calculate portfolio value across all stocks
+        portfolio_value = self.balance
+        for sym in self.shares_held:
+            price = self.df.iloc[self.current_step][f"{sym}_4. close"]
+            portfolio_value += self.shares_held[sym] * price
+            
         reward = portfolio_value - self.initial_balance
         
         # Update step
@@ -45,16 +61,23 @@ class StockTradingEnv(gym.Env):
     def _get_obs(self):
         return self.df.iloc[self.current_step].values
     
-    def _execute_buy(self, price):
+    def _execute_buy(self, price, symbol):
         if self.balance >= price:
-            self.shares_held += 1
+            self.shares_held[symbol] += 1
             self.balance -= price
             
-    def _execute_sell(self, price):
-        if self.shares_held > 0:
-            self.shares_held -= 1
+    def _execute_sell(self, price, symbol):
+        if self.shares_held[symbol] > 0:
+            self.shares_held[symbol] -= 1
             self.balance += price
             
     def action_masks(self):
-        # Prevent selling when no shares are held
-        return [True, True, self.shares_held > 0]
+        masks = []
+        for action in range(self.action_space.n):
+            stock_idx = action // 3
+            action_type = action % 3
+            symbol = self.symbols[stock_idx]
+            masks.append(
+                action_type != 2 or self.shares_held[symbol] > 0
+            )
+        return masks

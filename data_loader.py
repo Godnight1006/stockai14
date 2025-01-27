@@ -6,14 +6,17 @@ class DataLoader:
     def __init__(self, api_key):
         self.ts = TimeSeries(key=api_key, output_format='pandas')
         
-    def load_data(self, symbol, start_date, end_date):
-        """Load historical data and calculate technical indicators"""
-        data, _ = self.ts.get_daily_adjusted(symbol, outputsize='full')
-        data = data.loc[start_date:end_date]
-        
-        # Calculate technical indicators
-        data = self._calculate_indicators(data)
-        return data
+    def load_data(self, symbols, start_date, end_date):
+        """Load historical data for multiple symbols and calculate indicators"""
+        merged_data = pd.DataFrame()
+        for symbol in symbols:
+            data, _ = self.ts.get_daily_adjusted(symbol, outputsize='full')
+            data = data.loc[start_date:end_date]
+            data = self._calculate_indicators(data)
+            # Add symbol prefix to columns
+            data = data.add_prefix(f"{symbol}_")
+            merged_data = pd.concat([merged_data, data], axis=1)
+        return merged_data.ffill().dropna()
     
     def _calculate_indicators(self, data):
         """Calculate technical indicators"""

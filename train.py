@@ -7,8 +7,8 @@ import numpy as np
 
 def load_preprocessed_data():
     loader = DataLoader(api_key='YOUR_API_KEY')
-    df = loader.load_data('AAPL', '2010-01-01', '2023-12-31')
-    return df
+    # Load multiple symbols
+    return loader.load_data(['AAPL', 'MSFT', 'GOOG'], '2010-01-01', '2023-12-31')
 
 def train_model():
     # Load and preprocess data
