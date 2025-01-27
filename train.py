@@ -22,7 +22,6 @@ def train_model():
         features_extractor_class=DecisionTransformer,
         features_extractor_kwargs=dict(
             act_dim=env.action_space.n,
-            observation_space=env.observation_space  # Add this
         )
     )
     
