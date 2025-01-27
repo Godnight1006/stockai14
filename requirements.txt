@@ -3,4 +3,4 @@ sb3-contrib==2.2.1
 yfinance==0.2.37
 pandas==2.0.3
 numpy==1.24.3
-torch==2.0.1
+torch==2.3.0+cu121  # Update to latest CUDA 12.1 compatible version

@@ -4,6 +4,9 @@ from data_loader import DataLoader
 from trading_env import StockTradingEnv
 from dt_model import DecisionTransformer
 import numpy as np
+import torch
+
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def load_preprocessed_data():
     loader = DataLoader()
@@ -41,6 +44,14 @@ def train_model():
         clip_range=0.2,
         clip_range_vf=0.2
     )
+    
+    # Configure for GPU training
+    model.policy.to(device)
+    torch.backends.cudnn.benchmark = True  # Enable cuDNN optimizations
+    torch.set_float32_matmul_precision('high')  # For Tensor Cores
+    
+    print(f"Using GPUs: {torch.cuda.device_count()}")
+    print(f"Device name: {torch.cuda.get_device_name(0)}")
     
     # Train the model
     model.learn(total_timesteps=1_000_000)

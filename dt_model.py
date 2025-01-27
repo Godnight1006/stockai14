@@ -25,13 +25,15 @@ class DecisionTransformer(nn.Module):
         # New embedding layer for sequence
         self.state_embed = nn.Linear(state_dim, hidden_size)
         self.positional_encoding = PositionalEncoding(hidden_size)
-        self.transformer = nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(
-                d_model=hidden_size,
-                nhead=16,  # increased attention heads
-                dim_feedforward=hidden_size*4
-            ),
-            num_layers=6  # deeper network
+        self.transformer = nn.DataParallel(  # Wrap with DataParallel
+            nn.TransformerEncoder(
+                nn.TransformerEncoderLayer(
+                    d_model=hidden_size,
+                    nhead=16,  # increased attention heads
+                    dim_feedforward=hidden_size*4
+                ),
+                num_layers=6  # deeper network
+            )
         )
         self.features_dim = hidden_size  # Required by SB3 for features extractors
         
