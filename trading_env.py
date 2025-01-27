@@ -28,9 +28,10 @@ class StockTradingEnv(gym.Env):
         
     def reset(self, seed=None, options=None):
         self.balance = self.initial_balance
-        self.shares_held = {symbol: 0 for symbol in self.symbols}  # Fix dictionary reset
-        self.current_step = 0
-        return self._get_obs(), {}  # Add empty info dict
+        self.shares_held = {symbol: 0 for symbol in self.symbols}
+        # Start at window_size to have enough history
+        self.current_step = self.window_size  
+        return self._get_obs(), {}
     
     def step(self, action):
         # Decompose action into stock_idx and action_type
@@ -62,10 +63,9 @@ class StockTradingEnv(gym.Env):
         return self._get_obs(), reward, done, False, {}
     
     def _get_obs(self):
-        # Return window of historical data
         window = self.df.iloc[self.current_step-self.window_size:self.current_step]
-        # Normalize window locally to prevent lookahead
-        return ((window - window.mean()) / window.std()).values
+        # Add epsilon to prevent division by zero
+        return ((window - window.mean()) / (window.std() + 1e-8)).values
     
     def _execute_buy(self, price, symbol):
         if self.balance >= price:
