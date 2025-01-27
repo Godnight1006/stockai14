@@ -5,6 +5,11 @@ from trading_env import StockTradingEnv
 from dt_model import DecisionTransformer
 import numpy as np
 import torch
+from stable_baselines3.common.callbacks import CheckpointCallback
+from datetime import datetime
+import shutil
+import os
+import json
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -53,9 +58,41 @@ def train_model():
     print(f"Using GPUs: {torch.cuda.device_count()}")
     print(f"Device name: {torch.cuda.get_device_name(0)}")
     
-    # Train the model
-    model.learn(total_timesteps=1_000_000)
-    model.save("dt_stock_trader")
+    # Create checkpoint directory with timestamp
+    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    checkpoint_dir = f"checkpoints/{run_id}"
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    
+    # Save training metadata
+    with open(f"{checkpoint_dir}/meta.json", "w") as f:
+        json.dump({
+            "start_time": run_id,
+            "symbols": ['AAPL', 'MSFT', 'GOOG'],
+            "window_size": 1260,
+            "hidden_size": 256
+        }, f)
+    
+    # Copy important files to checkpoint dir
+    shutil.copy("requirements.txt", checkpoint_dir)
+    shutil.copy("train.py", checkpoint_dir)
+    
+    # Configure checkpoint callback
+    checkpoint_callback = CheckpointCallback(
+        save_freq=50_000,
+        save_path=checkpoint_dir,
+        name_prefix="dt_model",
+        save_replay_buffer=True,
+        save_vecnormalize=True
+    )
+    
+    # Train the model with callbacks
+    model.learn(
+        total_timesteps=1_000_000,
+        callback=[checkpoint_callback]
+    )
+    
+    # Save final model
+    model.save(f"{checkpoint_dir}/dt_stock_trader_final")
 
 if __name__ == "__main__":
     train_model()
