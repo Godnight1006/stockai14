@@ -19,27 +19,32 @@ class PositionalEncoding(nn.Module):
 class DecisionTransformer(nn.Module):
     def __init__(self, observation_space, act_dim, hidden_size=128):
         super().__init__()
-        state_dim = observation_space.shape[0]
-        self.state_embed = nn.Linear(state_dim, hidden_size)
-        self.action_embed = nn.Embedding(act_dim, hidden_size)
-        self.positional_encoding = PositionalEncoding(hidden_size)
+        # Input is now (window_size, features)
+        state_dim = observation_space.shape[1]  # features dimension
         
+        # New embedding layer for sequence
+        self.state_embed = nn.Linear(state_dim, hidden_size)
+        self.positional_encoding = PositionalEncoding(hidden_size)
         self.transformer = nn.TransformerEncoder(
             nn.TransformerEncoderLayer(
                 d_model=hidden_size,
-                nhead=4,
+                nhead=8,  # increased attention heads
                 dim_feedforward=hidden_size*4
             ),
-            num_layers=3
+            num_layers=4  # deeper network
         )
-        
-        self.predict_action = nn.Linear(hidden_size, act_dim)
         self.features_dim = hidden_size  # Required by SB3 for features extractors
         
     def forward(self, states):
-        # Add sequence dimension and process single timestep
-        states = states.unsqueeze(0)  # [1, batch_size, state_dim]
-        state_emb = self.state_embed(states)
-        combined = self.positional_encoding(state_emb)
-        transformer_out = self.transformer(combined)
-        return transformer_out[-1]  # Return features for current timestep
+        # states shape: (batch_size, window_size, features)
+        batch_size = states.shape[0]
+        
+        # Embed entire sequence
+        state_emb = self.state_embed(states)  # (batch, window, hidden)
+        state_emb = self.positional_encoding(state_emb)
+        
+        # Process through transformer
+        transformer_out = self.transformer(state_emb)
+        
+        # Use last timestep's output for action prediction
+        return transformer_out[:, -1, :]

@@ -2,7 +2,7 @@ import gymnasium as gym
 import numpy as np
 
 class StockTradingEnv(gym.Env):
-    def __init__(self, df, initial_balance=10000):
+    def __init__(self, df, initial_balance=10000, window_size=1260):  # ~5 years of trading days
         super().__init__()
         self.df = df
         self.initial_balance = initial_balance
@@ -14,10 +14,13 @@ class StockTradingEnv(gym.Env):
         # New action space: 3 actions per stock (hold/buy/sell)
         self.action_space = gym.spaces.Discrete(3 * self.num_stocks)
         
-        # Observation space: OHLCV + indicators for all stocks
+        # New observation space with historical window
         self.observation_space = gym.spaces.Box(
             low=-np.inf, high=np.inf, 
-            shape=(len(df.columns),), dtype=np.float32)
+            shape=(window_size, len(df.columns)),  # 2D observation
+            dtype=np.float32
+        )
+        self.window_size = window_size
         
         # Track positions per stock
         self.shares_held = {symbol: 0 for symbol in self.symbols}
@@ -59,7 +62,10 @@ class StockTradingEnv(gym.Env):
         return self._get_obs(), reward, done, False, {}
     
     def _get_obs(self):
-        return self.df.iloc[self.current_step].values
+        # Return window of historical data
+        window = self.df.iloc[self.current_step-self.window_size:self.current_step]
+        # Normalize window locally to prevent lookahead
+        return ((window - window.mean()) / window.std()).values
     
     def _execute_buy(self, price, symbol):
         if self.balance >= price:

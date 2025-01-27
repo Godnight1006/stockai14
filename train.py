@@ -14,15 +14,15 @@ def train_model():
     # Load and preprocess data
     df = load_preprocessed_data()
     
-    # Create environment
-    env = StockTradingEnv(df)
+    # Create environment with window size
+    env = StockTradingEnv(df, window_size=1260)
     
     # Configure model
     policy_kwargs = dict(
         features_extractor_class=DecisionTransformer,
         features_extractor_kwargs=dict(
-            # Remove observation_space parameter here
-            act_dim=env.action_space.n
+            act_dim=env.action_space.n,
+            observation_space=env.observation_space  # Add this
         )
     )
     

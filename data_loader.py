@@ -75,5 +75,4 @@ class DataLoader:
                 data[f'{symbol}_MACD'] = exp1 - exp2
                 data[f'{symbol}_Signal'] = data[f'{symbol}_MACD'].ewm(span=9, adjust=False).mean()
         
-        # Normalize
-        return (data - data.mean()) / data.std()
+        return data  # Normalization now handled in environment
