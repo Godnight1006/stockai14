@@ -34,6 +34,7 @@ class DecisionTransformer(nn.Module):
         )
         
         self.predict_action = nn.Linear(hidden_size, act_dim)
+        self.features_dim = hidden_size  # Required by SB3 for features extractors
         
     def forward(self, states, actions, timesteps):
         # Embed inputs
