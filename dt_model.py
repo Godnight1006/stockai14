@@ -36,21 +36,10 @@ class DecisionTransformer(nn.Module):
         self.predict_action = nn.Linear(hidden_size, act_dim)
         self.features_dim = hidden_size  # Required by SB3 for features extractors
         
-    def forward(self, states, actions, timesteps):
-        # Embed inputs
+    def forward(self, states):
+        # Add sequence dimension and process single timestep
+        states = states.unsqueeze(0)  # [1, batch_size, state_dim]
         state_emb = self.state_embed(states)
-        action_emb = self.action_embed(actions)
-        
-        # Combine embeddings
-        seq_len = states.size(0)
-        combined = state_emb + action_emb
-        
-        # Add positional encoding
-        combined = self.positional_encoding(combined)
-        
-        # Transformer processing
+        combined = self.positional_encoding(state_emb)
         transformer_out = self.transformer(combined)
-        
-        # Predict next action
-        action_logits = self.predict_action(transformer_out[-1])
-        return action_logits
+        return transformer_out[-1]  # Return features for current timestep
