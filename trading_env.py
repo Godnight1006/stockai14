@@ -56,7 +56,7 @@ class StockTradingEnv(gym.Env):
         self.current_step += 1
         done = self.current_step >= len(self.df) - 1
         
-        return self._get_obs(), reward, done, {}
+        return self._get_obs(), reward, done, False, {}
     
     def _get_obs(self):
         return self.df.iloc[self.current_step].values
