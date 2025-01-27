@@ -2,6 +2,7 @@ from sb3_contrib import MaskablePPO
 from sb3_contrib.common.maskable.utils import get_action_masks
 from data_loader import DataLoader
 from trading_env import StockTradingEnv
+from dt_model import DecisionTransformer
 import numpy as np
 
 def load_preprocessed_data():
