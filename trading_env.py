@@ -23,11 +23,11 @@ class StockTradingEnv(gym.Env):
         self.shares_held = {symbol: 0 for symbol in self.symbols}
         self.reset()
         
-    def reset(self):
+    def reset(self, seed=None, options=None):
         self.balance = self.initial_balance
-        self.shares_held = 0
+        self.shares_held = {symbol: 0 for symbol in self.symbols}  # Fix dictionary reset
         self.current_step = 0
-        return self._get_obs()
+        return self._get_obs(), {}  # Add empty info dict
     
     def step(self, action):
         # Decompose action into stock_idx and action_type
