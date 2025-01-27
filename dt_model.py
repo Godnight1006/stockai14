@@ -17,7 +17,7 @@ class PositionalEncoding(nn.Module):
         return x + self.pe[:x.size(0), :]
 
 class DecisionTransformer(nn.Module):
-    def __init__(self, observation_space, act_dim, hidden_size=128):
+    def __init__(self, observation_space, act_dim, hidden_size=256):
         super().__init__()
         # Input is now (window_size, features)
         state_dim = observation_space.shape[1]  # features dimension
@@ -28,10 +28,10 @@ class DecisionTransformer(nn.Module):
         self.transformer = nn.TransformerEncoder(
             nn.TransformerEncoderLayer(
                 d_model=hidden_size,
-                nhead=8,  # increased attention heads
+                nhead=16,  # increased attention heads
                 dim_feedforward=hidden_size*4
             ),
-            num_layers=4  # deeper network
+            num_layers=6  # deeper network
         )
         self.features_dim = hidden_size  # Required by SB3 for features extractors
         

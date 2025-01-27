@@ -22,6 +22,7 @@ def train_model():
         features_extractor_class=DecisionTransformer,
         features_extractor_kwargs=dict(
             act_dim=env.action_space.n,
+            hidden_size=256  # Match new model size
         )
     )
     
@@ -33,8 +34,8 @@ def train_model():
         verbose=1,
         learning_rate=3e-4,
         n_steps=2048,
-        batch_size=64,
-        n_epochs=10,
+        batch_size=128,
+        n_epochs=15,
         gamma=0.99,
         gae_lambda=0.95,
         clip_range=0.2,
