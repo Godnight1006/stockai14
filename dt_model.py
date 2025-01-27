@@ -17,8 +17,9 @@ class PositionalEncoding(nn.Module):
         return x + self.pe[:x.size(0), :]
 
 class DecisionTransformer(nn.Module):
-    def __init__(self, state_dim, act_dim, hidden_size=128):
+    def __init__(self, observation_space, act_dim, hidden_size=128):
         super().__init__()
+        state_dim = observation_space.shape[0]
         self.state_embed = nn.Linear(state_dim, hidden_size)
         self.action_embed = nn.Embedding(act_dim, hidden_size)
         self.positional_encoding = PositionalEncoding(hidden_size)

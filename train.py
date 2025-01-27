@@ -21,7 +21,6 @@ def train_model():
     policy_kwargs = dict(
         features_extractor_class=DecisionTransformer,
         features_extractor_kwargs=dict(
-            state_dim=env.observation_space.shape[0],
             act_dim=env.action_space.n
         )
     )
