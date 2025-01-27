@@ -27,9 +27,11 @@ def run_validation():
         if done:
             break
             
-    # Calculate final portfolio value
-    current_price = val_df.iloc[-1][f'{symbol}_Close']
-    final_value = env.balance + env.shares_held * current_price
+    # Calculate final portfolio value across all stocks
+    final_value = env.balance
+    for symbol, shares in env.shares_held.items():
+        current_price = val_df.iloc[-1][f'{symbol}_Close']
+        final_value += shares * current_price
     print(f"Final portfolio value: ${final_value:,.2f}")
 
 if __name__ == "__main__":
