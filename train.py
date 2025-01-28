@@ -72,9 +72,10 @@ def train_model():
             "hidden_size": 256
         }, f)
     
-    # Copy important files to checkpoint dir
-    shutil.copy("requirements.txt", checkpoint_dir)
-    shutil.copy("train.py", checkpoint_dir)
+    # Copy important files to checkpoint dir using absolute paths
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    shutil.copy(os.path.join(script_dir, "requirements.txt"), checkpoint_dir)
+    shutil.copy(os.path.join(script_dir, "train.py"), checkpoint_dir)
     
     # Configure checkpoint callback
     checkpoint_callback = CheckpointCallback(
